@@ -266,11 +266,11 @@ export class PostHog {
     config: PostHogConfig
 
     rateLimiter: RateLimiter
-    scrollManager: ScrollManager
+    scrollManager?: ScrollManager
     pageViewManager: PageViewManager
-    featureFlags?: PostHogFeatureFlags
+    featureFlags: PostHogFeatureFlags
     surveys?: PostHogSurveys
-    experiments?: WebExperiments
+    experiments: WebExperiments
     toolbar?: Toolbar
     exceptions?: PostHogExceptions
     consent: ConsentManager
@@ -335,16 +335,16 @@ export class PostHog {
         this._cachedPersonProperties = null
 
         if (!MINIMAL_BUILD) {
-            this.featureFlags = new PostHogFeatureFlags(this)
             this.toolbar = new Toolbar(this)
+            this.scrollManager = new ScrollManager(this)
         }
-
-        this.scrollManager = new ScrollManager(this)
+        
+        this.featureFlags = new PostHogFeatureFlags(this)
         this.pageViewManager = new PageViewManager(this)
+        this.experiments = new WebExperiments(this)
 
         if (!MINIMAL_BUILD) {
             this.surveys = new PostHogSurveys(this)
-            this.experiments = new WebExperiments(this)
             this.exceptions = new PostHogExceptions(this)
         }
 
@@ -490,8 +490,8 @@ export class PostHog {
             this.sessionRecording.startIfEnabledOrStop()
         }
 
-        if (!this.config.disable_scroll_properties) {
-            this.scrollManager.startMeasuringScrollPosition()
+        if (!MINIMAL_BUILD && !this.config.disable_scroll_properties) {
+            this.scrollManager?.startMeasuringScrollPosition()
         }
 
         if (!MINIMAL_BUILD) {
